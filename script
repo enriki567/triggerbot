@@ -1,0 +1,94 @@
+local gui = Instance.new("ScreenGui")
+gui.Name = "Triggerbot GUI"
+gui.Parent = game.Players.LocalPlayer.PlayerGui
+
+-- Create a frame for the GUI
+local frame = Instance.new("Frame")
+frame.BackgroundColor3 = Color3.new(1, 1, 1) -- White background
+frame.Size = UDim2.new(0, 300, 0, 200)
+frame.Position = UDim2.new(0, 100, 0, 100)
+frame.Parent = gui
+
+-- Create a label for the GUI
+local label = Instance.new("TextLabel")
+label.Text = "Triggerbot"
+label.Font = Enum.Font.SourceSans
+label.FontSize = Enum.FontSize.Size24
+label.TextColor3 = Color3.new(0, 0, 0) -- Black text
+label.Size = UDim2.new(0, 200, 0, 50)
+label.Position = UDim2.new(0, 50, 0, 50)
+label.Parent = frame
+
+-- Create a slider for the prediction
+local predictionSlider = Instance.new("Slider")
+predictionSlider.BackgroundColor3 = Color3.new(1, 1, 1) -- White background
+predictionSlider.Size = UDim2.new(0, 250, 0, 20)
+predictionSlider.Position = UDim2.new(0, 25, 0, 100)
+predictionSlider.MinValue = 0
+predictionSlider.MaxValue = 1
+predictionSlider.Value = 0.5
+predictionSlider.Parent = frame
+
+-- Create a local script to handle the triggerbot
+local localScript = Instance.new("LocalScript")
+localScript.Parent = gui
+
+-- Script to handle the triggerbot
+local function triggerBot()
+local closestPlayer = getClosestPlayer()
+if closestPlayer then
+local prediction = predictMovement(closestPlayer, predictionSlider.Value)
+local mouse = game.Players.LocalPlayer.GetMouse(game.Players.LocalPlayer)
+mouse.Hit:Connect(function(hit)
+if hit.Parent == closestPlayer.Character then
+-- Trigger the bot here
+print("Triggered!")
+end
+end)
+end
+end
+
+-- Create a function to get the closest player
+local function getClosestPlayer()
+local players = game.Players:GetPlayers()
+local closestPlayer = nil
+local closestDistance = math.huge
+
+for _, player in pairs(players) do
+if player ~= game.Players.LocalPlayer then
+local character = player.Character
+if character then
+local humanoid = character:FindFirstChild("Humanoid")
+if humanoid then
+local distance = (character.HumanoidRootPart.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
+if distance < closestDistance then
+closestDistance = distance
+closestPlayer = player
+end
+end
+end
+end
+end
+
+return closestPlayer
+end
+
+-- Create a function to predict the player's movement
+local function predictMovement(player, predictionAmount)
+local character = player.Character
+if character then
+local humanoid = character:FindFirstChild("Humanoid")
+if humanoid then
+local velocity = humanoid.RootPart.Velocity
+local position = humanoid.RootPart.Position
+local prediction = position + velocity * predictionAmount
+return prediction
+end
+end
+end
+
+-- Create a loop to run the triggerbot
+while true do
+triggerBot()
+wait(0.01)
+end
